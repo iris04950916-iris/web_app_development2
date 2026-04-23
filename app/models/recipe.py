@@ -9,6 +9,7 @@ recipe_category = db.Table('recipe_category',
 )
 
 class Recipe(db.Model):
+    """食譜模型"""
     __tablename__ = 'recipes'
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -30,35 +31,65 @@ class Recipe(db.Model):
     
     @classmethod
     def create(cls, title, description=None, image_url=None, calories=None, protein=None, carbs=None, fat=None):
-        recipe = cls(
-            title=title, description=description, image_url=image_url,
-            calories=calories, protein=protein, carbs=carbs, fat=fat
-        )
-        db.session.add(recipe)
-        db.session.commit()
-        return recipe
+        """新增食譜"""
+        try:
+            recipe = cls(
+                title=title, description=description, image_url=image_url,
+                calories=calories, protein=protein, carbs=carbs, fat=fat
+            )
+            db.session.add(recipe)
+            db.session.commit()
+            return recipe
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error creating recipe: {e}")
+            return None
         
     @classmethod
     def get_all(cls):
-        return cls.query.all()
+        """取得所有食譜"""
+        try:
+            return cls.query.all()
+        except Exception as e:
+            print(f"Error getting recipes: {e}")
+            return []
         
     @classmethod
     def get_by_id(cls, recipe_id):
-        return cls.query.get(recipe_id)
+        """依 ID 取得食譜"""
+        try:
+            return cls.query.get(recipe_id)
+        except Exception as e:
+            print(f"Error getting recipe {recipe_id}: {e}")
+            return None
         
     def update(self, **kwargs):
-        for key, value in kwargs.items():
-            if hasattr(self, key):
-                setattr(self, key, value)
-        db.session.commit()
-        return self
+        """更新食譜資料"""
+        try:
+            for key, value in kwargs.items():
+                if hasattr(self, key):
+                    setattr(self, key, value)
+            db.session.commit()
+            return self
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error updating recipe: {e}")
+            return None
         
     def delete(self):
-        db.session.delete(self)
-        db.session.commit()
+        """刪除食譜"""
+        try:
+            db.session.delete(self)
+            db.session.commit()
+            return True
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error deleting recipe: {e}")
+            return False
 
 
 class Ingredient(db.Model):
+    """食材模型"""
     __tablename__ = 'ingredients'
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -68,23 +99,43 @@ class Ingredient(db.Model):
     
     @classmethod
     def create(cls, recipe_id, name, amount):
-        ingredient = cls(recipe_id=recipe_id, name=name, amount=amount)
-        db.session.add(ingredient)
-        db.session.commit()
-        return ingredient
+        """新增食材"""
+        try:
+            ingredient = cls(recipe_id=recipe_id, name=name, amount=amount)
+            db.session.add(ingredient)
+            db.session.commit()
+            return ingredient
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error creating ingredient: {e}")
+            return None
         
     def update(self, name=None, amount=None):
-        if name: self.name = name
-        if amount: self.amount = amount
-        db.session.commit()
-        return self
+        """更新食材"""
+        try:
+            if name: self.name = name
+            if amount: self.amount = amount
+            db.session.commit()
+            return self
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error updating ingredient: {e}")
+            return None
         
     def delete(self):
-        db.session.delete(self)
-        db.session.commit()
+        """刪除食材"""
+        try:
+            db.session.delete(self)
+            db.session.commit()
+            return True
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error deleting ingredient: {e}")
+            return False
 
 
 class Step(db.Model):
+    """步驟模型"""
     __tablename__ = 'steps'
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -94,23 +145,43 @@ class Step(db.Model):
     
     @classmethod
     def create(cls, recipe_id, step_number, instruction):
-        step = cls(recipe_id=recipe_id, step_number=step_number, instruction=instruction)
-        db.session.add(step)
-        db.session.commit()
-        return step
+        """新增步驟"""
+        try:
+            step = cls(recipe_id=recipe_id, step_number=step_number, instruction=instruction)
+            db.session.add(step)
+            db.session.commit()
+            return step
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error creating step: {e}")
+            return None
         
     def update(self, step_number=None, instruction=None):
-        if step_number: self.step_number = step_number
-        if instruction: self.instruction = instruction
-        db.session.commit()
-        return self
+        """更新步驟"""
+        try:
+            if step_number: self.step_number = step_number
+            if instruction: self.instruction = instruction
+            db.session.commit()
+            return self
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error updating step: {e}")
+            return None
         
     def delete(self):
-        db.session.delete(self)
-        db.session.commit()
+        """刪除步驟"""
+        try:
+            db.session.delete(self)
+            db.session.commit()
+            return True
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error deleting step: {e}")
+            return False
 
 
 class Review(db.Model):
+    """評論模型"""
     __tablename__ = 'reviews'
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -121,17 +192,36 @@ class Review(db.Model):
     
     @classmethod
     def create(cls, recipe_id, rating, content=None):
-        review = cls(recipe_id=recipe_id, rating=rating, content=content)
-        db.session.add(review)
-        db.session.commit()
-        return review
+        """新增評論"""
+        try:
+            review = cls(recipe_id=recipe_id, rating=rating, content=content)
+            db.session.add(review)
+            db.session.commit()
+            return review
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error creating review: {e}")
+            return None
         
     def update(self, rating=None, content=None):
-        if rating: self.rating = rating
-        if content is not None: self.content = content
-        db.session.commit()
-        return self
+        """更新評論"""
+        try:
+            if rating: self.rating = rating
+            if content is not None: self.content = content
+            db.session.commit()
+            return self
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error updating review: {e}")
+            return None
         
     def delete(self):
-        db.session.delete(self)
-        db.session.commit()
+        """刪除評論"""
+        try:
+            db.session.delete(self)
+            db.session.commit()
+            return True
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error deleting review: {e}")
+            return False

@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}{{ recipe.title }} - 食譜收藏夾{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0 mb-4">
+            {% if recipe.image_url %}
+            <img src="{{ recipe.image_url }}" class="card-img-top" alt="{{ recipe.title }}" style="max-height: 400px; object-fit: cover;">
+            {% endif %}
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h1 class="card-title fw-bold mb-0">{{ recipe.title }}</h1>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('recipe.edit_recipe', id=recipe.id) }}" class="btn btn-outline-secondary btn-sm">編輯</a>
+                        <form action="{{ url_for('recipe.delete_recipe', id=recipe.id) }}" method="POST" class="d-inline" onsubmit="return confirm('確定要刪除這份食譜嗎？');">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">刪除</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    {% for cat in recipe.categories %}
+                    <span class="badge bg-secondary">{{ cat.name }}</span>
+                    {% endfor %}
+                    <span class="text-muted ms-2"><small>發布於 {{ recipe.created_at.strftime('%Y-%m-%d') if recipe.created_at else '' }}</small></span>
+                </div>
+                
+                <p class="card-text lead text-muted">{{ recipe.description }}</p>
+                
+                <hr class="my-4">
+                
+                <h4 class="fw-bold mb-3">🛒 準備材料</h4>
+                <ul class="list-group list-group-flush mb-5">
+                    {% for ing in recipe.ingredients %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 bg-transparent border-bottom-dashed">
+                        <span>{{ ing.name }}</span>
+                        <span class="badge bg-light border text-dark">{{ ing.amount }}</span>
+                    </li>
+                    {% else %}
+                    <li class="list-group-item text-muted px-0 bg-transparent">尚未新增材料</li>
+                    {% endfor %}
+                </ul>
+                
+                <h4 class="fw-bold mb-3">🍳 料理步驟</h4>
+                <div class="list-group list-group-numbered list-group-flush">
+                    {% for step in recipe.steps|sort(attribute='step_number') %}
+                    <div class="list-group-item px-0 py-3 bg-transparent d-flex align-items-start border-0">
+                        <div class="ms-2 me-auto">
+                            <p class="mb-0 lh-lg">{{ step.instruction }}</p>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="list-group-item text-muted px-0 bg-transparent">尚未新增步驟</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- 評論區 -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                <h5 class="mb-0 fw-bold">💬 評論與心得</h5>
+            </div>
+            <div class="card-body p-4">
+                <form action="{{ url_for('recipe.add_review', id=recipe.id) }}" method="POST" class="mb-5 bg-light p-3 rounded">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label for="rating" class="form-label fw-bold small text-muted">給予評分</label>
+                            <select class="form-select" id="rating" name="rating" required>
+                                <option value="5">⭐⭐⭐⭐⭐ 5</option>
+                                <option value="4">⭐⭐⭐⭐ 4</option>
+                                <option value="3">⭐⭐⭐ 3</option>
+                                <option value="2">⭐⭐ 2</option>
+                                <option value="1">⭐ 1</option>
+                            </select>
+                        </div>
+                        <div class="col-md-9 mb-3">
+                            <label for="content" class="form-label fw-bold small text-muted">心得內容</label>
+                            <input type="text" class="form-control" id="content" name="content" placeholder="分享你的料理心得...">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-dark btn-sm px-4">送出留言</button>
+                </form>
+
+                <div class="list-group list-group-flush">
+                    {% for review in recipe.reviews|sort(attribute='created_at', reverse=True) %}
+                    <div class="list-group-item px-0 bg-transparent border-bottom py-3">
+                        <div class="d-flex w-100 justify-content-between mb-2">
+                            <span class="text-warning">
+                                {% for i in range(review.rating) %}★{% endfor %}
+                            </span>
+                            <small class="text-muted">{{ review.created_at.strftime('%Y-%m-%d') if review.created_at else '' }}</small>
+                        </div>
+                        <p class="mb-0">{{ review.content }}</p>
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0 text-center py-3">還沒有人留言，來當第一個吧！</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- 營養資訊 -->
+        <div class="card shadow-sm border-0 sticky-top" style="top: 20px;">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                <h5 class="mb-0 fw-bold">📊 營養資訊</h5>
+            </div>
+            <div class="card-body p-4">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between px-0 bg-transparent">
+                        <span class="text-muted">熱量</span>
+                        <span class="fw-bold">{{ recipe.calories if recipe.calories else '--' }} <small class="text-muted fw-normal">kcal</small></span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0 bg-transparent">
+                        <span class="text-muted">蛋白質</span>
+                        <span class="fw-bold">{{ recipe.protein if recipe.protein else '--' }} <small class="text-muted fw-normal">g</small></span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0 bg-transparent">
+                        <span class="text-muted">碳水</span>
+                        <span class="fw-bold">{{ recipe.carbs if recipe.carbs else '--' }} <small class="text-muted fw-normal">g</small></span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0 bg-transparent">
+                        <span class="text-muted">脂肪</span>
+                        <span class="fw-bold">{{ recipe.fat if recipe.fat else '--' }} <small class="text-muted fw-normal">g</small></span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

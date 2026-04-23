@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}首頁 - 食譜收藏夾{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+    <div class="col-md-8">
+        <h1 class="h3 mb-0 text-gray-800">所有食譜</h1>
+    </div>
+    <div class="col-md-4 text-end">
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle bg-white" type="button" data-bs-toggle="dropdown">
+                分類篩選
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow">
+                <li><a class="dropdown-item {% if not current_category_id %}active{% endif %}" href="{{ url_for('index.home') }}">全部</a></li>
+                {% for cat in categories %}
+                <li><a class="dropdown-item {% if current_category_id == cat.id %}active{% endif %}" href="{{ url_for('index.home', category_id=cat.id) }}">{{ cat.name }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for r in recipes %}
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0">
+            {% if r.image_url %}
+            <img src="{{ r.image_url }}" class="card-img-top" alt="{{ r.title }}" style="height: 200px; object-fit: cover;">
+            {% else %}
+            <div class="card-img-top bg-secondary bg-opacity-10 d-flex align-items-center justify-content-center" style="height: 200px;">
+                <span class="text-muted">🍽️ 無圖片</span>
+            </div>
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title fw-bold text-dark">{{ r.title }}</h5>
+                <p class="card-text text-muted text-truncate" style="max-height: 3rem; overflow: hidden;">
+                    {{ r.description if r.description else '沒有簡介' }}
+                </p>
+                <div class="mt-auto">
+                    {% for cat in r.categories %}
+                    <span class="badge bg-light text-dark border">{{ cat.name }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="card-footer bg-white border-top-0 pt-0">
+                <a href="{{ url_for('recipe.recipe_detail', id=r.id) }}" class="btn btn-outline-primary w-100">查看食譜</a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center py-5">
+        <div class="p-5 bg-white rounded shadow-sm">
+            <h4 class="text-muted mb-3">目前還沒有任何食譜</h4>
+            <a href="{{ url_for('recipe.new_recipe') }}" class="btn btn-primary">趕快來新增一個吧！</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
